@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "dos.h": "c",
+        "io.h": "c",
+        "crtdefs.h": "c",
+        "corecrt.h": "c",
+        "_mingw.h": "c",
+        "string.h": "c",
+        "i86.h": "c",
+        "stdint.h": "c",
+        "cstdint": "c"
+    }
+}

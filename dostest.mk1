@@ -1,0 +1,15 @@
+!define BLANK ""
+C:\Users\umbre\Documents\dos\init.obj : C:\Users\umbre\Documents\dos\init.c &
+.AUTODEPEND
+ @C:
+ cd C:\Users\umbre\Documents\dos
+ *wcc init.c -i="C:\WATCOM/h" -w4 -e25 -zq -od -d2 -bt=dos -fo=.obj -ml
+
+C:\Users\umbre\Documents\dos\dostest.exe : C:\Users\umbre\Documents\dos\init&
+.obj .AUTODEPEND
+ @C:
+ cd C:\Users\umbre\Documents\dos
+ @%write dostest.lk1 FIL init.obj
+ @%append dostest.lk1 
+ *wlink name dostest d all sys dos op m op maxe=25 op q op symf @dostest.lk1
+
