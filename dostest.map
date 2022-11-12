@@ -1,7 +1,7 @@
-Open Watcom Linker Version 2.0 beta Oct 19 2022 01:05:03 (64-bit)
+Open Watcom Linker Version 2.0 beta Oct 22 2022 01:04:19 (64-bit)
 Copyright (c) 2002-2022 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       22/11/10 16:00:43
+Created on:       22/11/11 23:46:23
 Executable Image: dostest.exe
 creating a DOS executable
 
@@ -13,7 +13,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          00cb:0000            00000880
+DGROUP                          00dd:0000            00000880
 
 
 
@@ -24,25 +24,25 @@ DGROUP                          00cb:0000            00000880
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-init_TEXT              CODE           AUTO           0000:0000       000003a0
-_TEXT                  CODE           AUTO           0000:03a0       000008f3
-init13_DATA            FAR_DATA       AUTO           00ca:0000       00000004
-FAR_DATA               FAR_DATA       AUTO           00ca:0004       00000000
-_NULL                  BEGDATA        DGROUP         00cb:0000       00000020
-_AFTERNULL             BEGDATA        DGROUP         00cd:0000       00000002
-CONST                  DATA           DGROUP         00cd:0002       00000000
-CONST2                 DATA           DGROUP         00cd:0002       00000000
-_DATA                  DATA           DGROUP         00cd:0002       0000003e
-XIB                    DATA           DGROUP         00d1:0000       00000000
-XI                     DATA           DGROUP         00d1:0000       00000006
-XIE                    DATA           DGROUP         00d1:0006       00000000
-YIB                    DATA           DGROUP         00d1:0006       00000000
-YI                     DATA           DGROUP         00d1:0006       00000000
-YIE                    DATA           DGROUP         00d1:0006       00000000
-STRINGS                DATA           DGROUP         00d1:0006       00000000
-DATA                   DATA           DGROUP         00d1:0006       00000000
-_BSS                   BSS            DGROUP         00d1:0006       00000018
-STACK                  STACK          DGROUP         00d3:0000       00000800
+init_TEXT              CODE           AUTO           0000:0000       000004c6
+_TEXT                  CODE           AUTO           0000:04c6       000008f3
+init13_DATA            FAR_DATA       AUTO           00dc:0000       00000008
+FAR_DATA               FAR_DATA       AUTO           00dc:0008       00000000
+_NULL                  BEGDATA        DGROUP         00dd:0000       00000020
+_AFTERNULL             BEGDATA        DGROUP         00df:0000       00000002
+CONST                  DATA           DGROUP         00df:0002       00000000
+CONST2                 DATA           DGROUP         00df:0002       00000000
+_DATA                  DATA           DGROUP         00df:0002       0000003e
+XIB                    DATA           DGROUP         00e3:0000       00000000
+XI                     DATA           DGROUP         00e3:0000       00000006
+XIE                    DATA           DGROUP         00e3:0006       00000000
+YIB                    DATA           DGROUP         00e3:0006       00000000
+YI                     DATA           DGROUP         00e3:0006       00000000
+YIE                    DATA           DGROUP         00e3:0006       00000000
+STRINGS                DATA           DGROUP         00e3:0006       00000000
+DATA                   DATA           DGROUP         00e3:0006       00000000
+_BSS                   BSS            DGROUP         00e3:0006       00000018
+STACK                  STACK          DGROUP         00e5:0000       00000800
 
 
                         +----------------+
@@ -55,7 +55,7 @@ STACK                  STACK          DGROUP         00d3:0000       00000800
 Address        Symbol
 =======        ======
 
-Module: init.obj(C:\Users\umbre\Documents\dos\init.c)
+Module: init.obj(C:\Users\Basil\Documents\dosgame\init.c)
 0000:0000+     set_video_mode_
 0000:0049+     set_color_
 0000:007f+     putchar_at_
@@ -63,85 +63,88 @@ Module: init.obj(C:\Users\umbre\Documents\dos\init.c)
 0000:0142+     print_string_
 0000:0193+     print_rect_
 0000:0257+     print_filled_rect_
-0000:02d5+     init_screen_
-0000:0313+     reset_screen_
-0000:0337      main_
-00cb:0066+     _registers
-00cb:0074+     _cursor_x
-00cb:0075+     _cursor_y
-00cb:0076+     _terminal_color
-00ca:0000+     _terminalbuffer
+0000:02d5+     copy_pages_
+0000:033d+     init_screen_
+0000:0393+     reset_screen_
+0000:03b7+     get_key_
+0000:0400      main_
+00dd:0066+     _registers
+00dd:0074+     _cursor_x
+00dd:0075+     _cursor_y
+00dd:0076+     _terminal_color
+00dc:0000+     _terminalbuffer
+00dc:0004+     _currentpage
 Module: C:\WATCOM\lib286\dos\clibl.lib(stk086.asm)
-0000:03a5      __STK
-0000:03c5*     __STKOVERFLOW_
+0000:04cb      __STK
+0000:04eb*     __STKOVERFLOW_
 Module: C:\WATCOM\lib286\dos\clibl.lib(intx086.c)
-0000:03e2+     int86x_
-0000:0483      int86_
+0000:0508+     int86x_
+0000:05a9      int86_
 Module: C:\WATCOM\lib286\dos\clibl.lib(cstart)
-00cb:0000*     __nullarea
-00cb:0024*     __ovlflag
-00cb:0025*     __intno
-00cb:0026*     __ovlvec
-0000:04b0      _cstart_
-0000:0661      __exit_
-0000:067e      __do_exit_with_msg_
-0000:075d      __GETDS
+00dd:0000*     __nullarea
+00dd:0024*     __ovlflag
+00dd:0025*     __intno
+00dd:0026*     __ovlvec
+0000:05d6      _cstart_
+0000:0787      __exit_
+0000:07a4      __do_exit_with_msg_
+0000:0883      __GETDS
 Module: C:\WATCOM\lib286\dos\clibl.lib(cmodel.asm)
-0000:0768      _big_code_
-0000:0768*     CodeModelMismatch
+0000:088e      _big_code_
+0000:088e*     CodeModelMismatch
 Module: C:\WATCOM\lib286\dos\clibl.lib(xmsg.c)
-0000:0768*     __exit_with_msg_
-0000:076d      __fatal_runtime_error_
+0000:088e*     __exit_with_msg_
+0000:0893      __fatal_runtime_error_
 Module: C:\WATCOM\lib286\dos\clibl.lib(crwdata)
-00cb:002a      __curbrk
-00cb:0032      __STACKLOW
-00cb:0034      __STACKTOP
-00cb:0036      __cbyte
-00cb:0038      __child
-00cb:003a      __no87
-00cb:0047      ___FPE_handler
-00cb:002c      __psp
-00cb:003b      __get_ovl_stack
-00cb:003f      __restore_ovl_stack
-00cb:0043      __close_ovl_file
-00cb:004b      __LpCmdLine
-00cb:004f      __LpPgmName
-00cb:002e      __osmajor
-00cb:002f      __osminor
-00cb:0030      __osmode
-00cb:0031      __HShift
+00dd:002a      __curbrk
+00dd:0032      __STACKLOW
+00dd:0034      __STACKTOP
+00dd:0036      __cbyte
+00dd:0038      __child
+00dd:003a      __no87
+00dd:0047      ___FPE_handler
+00dd:002c      __psp
+00dd:003b      __get_ovl_stack
+00dd:003f      __restore_ovl_stack
+00dd:0043      __close_ovl_file
+00dd:004b      __LpCmdLine
+00dd:004f      __LpPgmName
+00dd:002e      __osmajor
+00dd:002f      __osminor
+00dd:0030      __osmode
+00dd:0031      __HShift
 Module: C:\WATCOM\lib286\dos\clibl.lib(dointr)
-0000:0788      _DoINTR_
+0000:08ae      _DoINTR_
 Module: C:\WATCOM\lib286\dos\clibl.lib(segread.c)
-0000:0afd      segread_
+0000:0c23      segread_
 Module: C:\WATCOM\lib286\dos\clibl.lib(cmain086.c)
-0000:0b1d      __CMain
+0000:0c43      __CMain
 Module: C:\WATCOM\lib286\dos\clibl.lib(initrtns.c)
-0000:0b6f      __InitRtns
-0000:0b6f*     __FInitRtns
-0000:0bc6      __FiniRtns
-0000:0bc6*     __FFiniRtns
+0000:0c95      __InitRtns
+0000:0c95*     __FInitRtns
+0000:0cec      __FiniRtns
+0000:0cec*     __FFiniRtns
 Module: C:\WATCOM\lib286\dos\clibl.lib(uselfn.c)
-00cb:0054      ___uselfn
+00dd:0054      ___uselfn
 Module: C:\WATCOM\lib286\dos\clibl.lib(dosseg)
-0000:0c26      __DOSseg__
+0000:0d4c      __DOSseg__
 Module: C:\WATCOM\lib286\dos\clibl.lib(enterdb.c)
-0000:0c27      __EnterWVIDEO_
-00cb:0056+     __WD_Present
+0000:0d4d      __EnterWVIDEO_
+00dd:0056+     __WD_Present
 Module: C:\WATCOM\lib286\dos\clibl.lib(___argc.c)
-00cb:0078      ____Argv
-00cb:007c      ____Argc
+00dd:0078      ____Argv
+00dd:007c      ____Argc
 Module: C:\WATCOM\lib286\dos\clibl.lib(exit.c)
-0000:0c4b+     __null_int23_exit_
-0000:0c4c      exit_
-0000:0c7b*     _exit_
-00cb:0058+     ___int23_exit
-00cb:005c+     ___FPE_handler_exit
+0000:0d71+     __null_int23_exit_
+0000:0d72      exit_
+0000:0da1*     _exit_
+00dd:0058+     ___int23_exit
+00dd:005c+     ___FPE_handler_exit
 Module: C:\WATCOM\lib286\dos\clibl.lib(sgdef086)
-00cb:0060      __Start_XI
-00cb:0066      __End_XI
-00cb:0066      __Start_YI
-00cb:0066      __End_YI
+00dd:0060      __Start_XI
+00dd:0066      __End_XI
+00dd:0066      __Start_YI
+00dd:0066      __End_YI
 
 
                         +--------------------+
@@ -156,6 +159,6 @@ C:\WATCOM\lib286\dos\clibl.lib
                         +-----------------------+
 
 Stack size:  0800 (2048.)
-Memory size:  1530 (5424.)
-Entry point address: 0000:04b0
-Link time: 00:00.02
+Memory size:  1650 (5712.)
+Entry point address: 0000:05d6
+Link time: 00:00.66

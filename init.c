@@ -10,10 +10,16 @@ typedef enum color_t {Black,Blue,Green,Cyan,Red,Magenta,Brown,LightGrey,DarkGrey
 
 #ifdef _DOSBOX
 uint16_t* __far terminalbuffer;
+uint16_t* __far currentpage;
 #else
 uint16_t* terminalbuffer;
+uint16_t* currentpage;
 #endif
 union REGS registers;
+
+#define PAGESIZE SCREEN_WIDTH*SCREEN_HEIGHT*2
+#define PAGE(page) terminalbuffer + ((PAGESIZE)*(page))
+#define set_page(page) currentpage = PAGE(page)
 
 uint8_t terminal_color;
 uint8_t cursor_x;
@@ -37,7 +43,7 @@ void putchar_at(char c, uint8_t x, uint8_t y)
 {
     uint16_t vgac = c | (terminal_color << 8);
 
-    *(terminalbuffer + (SCREEN_WIDTH*y) + x) = vgac;
+    *(currentpage + (SCREEN_WIDTH*y) + x) = vgac;
     return;
 }
 
@@ -93,6 +99,15 @@ void print_filled_rect(char c, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
     }
 }
 
+void copy_pages()
+{
+    int i;
+    for(i = 0; i < PAGESIZE; i++)
+    {
+       *(PAGE(0)+i) = *(PAGE(1)+i); 
+    }
+}
+
 void init_screen()
 {
     #ifdef _DOSBOX
@@ -100,24 +115,46 @@ void init_screen()
     #else
     terminalbuffer = (uint16_t *) 0xB8000;
     #endif
+    set_page(0);
     set_video_mode(0x03);
     set_color(White,Black);
     return;
 }
+
 void reset_screen()
 {
     set_video_mode(0x03);
     return;
 }
 
+//get input
+
+int get_key()
+{
+    registers.h.ah = 0;
+    int86(0x16,&registers,&registers);
+    return registers.h.al;
+}
+//survivial game inside house, you are being frozen over and trying to keep yourself warm, surive until rescue
+
 int main()
 {
+    int c;
     init_screen();
     cursor_x = 10;
     cursor_y = 10;
-    set_color(White,Green);
+    set_page(1); // draw background to page 1, copy to page 0
     print_filled_rect(' ',9,9,16,13);
+    set_color(White,Green);
+    set_page(0);
+    copy_pages();
     putchar_at('@',10,10);
+    c = get_key();
+    while(c != 'e')
+    {
+        putchar(c);
+        c = get_key();
+    }
     set_color(White,Black);
     return 0;
 }
