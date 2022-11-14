@@ -8,6 +8,7 @@
         "string.h": "c",
         "i86.h": "c",
         "stdint.h": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "compare": "c"
     }
 }

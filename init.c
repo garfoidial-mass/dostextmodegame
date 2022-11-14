@@ -5,7 +5,7 @@
 
 typedef enum color_t {Black,Blue,Green,Cyan,Red,Magenta,Brown,LightGrey,DarkGrey,LightBlue,LightGreen,LightCyan,LightRed,LightMagenta,Yellow,White} TerminalColor;
 
-#define SCREEN_WIDTH 80
+#define SCREEN_WIDTH 40
 #define SCREEN_HEIGHT 25
 
 #ifdef _DOSBOX
@@ -17,9 +17,21 @@ uint16_t* currentpage;
 #endif
 union REGS registers;
 
-#define PAGESIZE SCREEN_WIDTH*SCREEN_HEIGHT*2
-#define PAGE(page) terminalbuffer + ((PAGESIZE)*(page))
+struct key_t{
+    int scancode;
+    char ascii;
+};
+
+typedef struct key_t key_t;
+
+enum gamestate_t {EXPLORING, CHOOSING, ATTACKING, DEFENDING};
+typedef enum gamestate_t gamestate_t;
+gamestate_t gamestate;
+
+#define PAGESIZE (SCREEN_WIDTH*SCREEN_HEIGHT*2)
+#define PAGE(page) (terminalbuffer + ((PAGESIZE)*(page)))
 #define set_page(page) currentpage = PAGE(page)
+#define getchar_at(page,x,y) ((char)*(PAGE(page)+(SCREEN_WIDTH*(y)) + (x)))
 
 uint8_t terminal_color;
 uint8_t cursor_x;
@@ -31,6 +43,13 @@ void set_video_mode(uint8_t mode)
     registers.h.al = mode;
     int86(0x10,&registers,&registers);
     return;
+}
+
+void clear_screen()
+{
+    registers.h.ah = 0x1;
+    registers.h.al = 0;
+    int86(0x10,&registers,&registers);
 }
 
 void set_color(TerminalColor foreground, TerminalColor background)
@@ -72,6 +91,24 @@ void print_string(const char* s)
     }
 }
 
+void print_hor_line(char c, uint8_t x1, uint8_t y1, uint8_t length)
+{
+    int x;
+    for(x = x1; x <= x1+length; x++)
+    {
+        putchar_at(c,x,y1);
+    }
+}
+
+void print_vert_line(char c, uint8_t x1, uint8_t y1, uint8_t height)
+{
+    int y;
+    for(y = y1; y <= y1+height; y++)
+    {
+        putchar_at(c,x1,y);
+    }
+}
+
 void print_rect(char c, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
 {
     int i;
@@ -86,6 +123,38 @@ void print_rect(char c, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
         putchar_at(c, x2, i);
     }
 }
+
+
+struct boxstyle_t
+{
+    char top; 
+    char bottom; 
+    char left;
+    char right;
+    char tr;
+    char tl;
+    char br;
+    char bl;
+};
+
+typedef struct boxstyle_t boxstyle_t;
+
+
+
+void print_fancy_box(boxstyle_t style, uint8_t x1, uint8_t y1, uint8_t cwidth, uint8_t cheight)
+{
+    uint8_t width = cwidth-1;
+    uint8_t height = cheight-1;
+    print_hor_line(style.top,x1+1,y1,width-2);
+    print_hor_line(style.bottom,x1+1,y1+height,width-2);
+    print_vert_line(style.left,x1,y1+1,height-2);
+    print_vert_line(style.left,x1+width,y1+1,height-2);
+    putchar_at(style.tl,x1,y1);
+    putchar_at(style.tr,x1+width,y1);
+    putchar_at(style.bl,x1,y1+height);
+    putchar_at(style.br,x1+width,y1+height);
+}
+
 
 void print_filled_rect(char c, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
 {
@@ -116,7 +185,7 @@ void init_screen()
     terminalbuffer = (uint16_t *) 0xB8000;
     #endif
     set_page(0);
-    set_video_mode(0x03);
+    set_video_mode(0x01);
     set_color(White,Black);
     return;
 }
@@ -129,32 +198,123 @@ void reset_screen()
 
 //get input
 
-int get_key()
+key_t get_key()
 {
+    key_t key;
     registers.h.ah = 0;
     int86(0x16,&registers,&registers);
-    return registers.h.al;
+    key.ascii = registers.h.al;
+    key.scancode = registers.h.ah;
+    return key;
 }
-//survivial game inside house, you are being frozen over and trying to keep yourself warm, surive until rescue
+
+int player_x;
+int player_y;
+int c;
+char buf[10];
+
+void move_player()
+{
+    int move_x;
+    int move_y;
+    key_t key;
+    move_x = 0;
+    move_y = 0;
+    key = get_key();
+    switch (key.ascii)
+    {
+    case 'e':
+        c=0;
+        return;
+        break;
+    break;
+    default:
+        break;
+    }
+    switch (key.scancode)
+    {
+        case 0x48: // up
+            move_y = -1;
+            break;
+        case 0x4B: // left
+            move_x = -1;
+            break;
+        case 0x4D: // right
+            move_x = 1;
+            break;
+        case 0x50: // down
+            move_y = 1;
+            break;
+        default:
+            break;
+    }
+    //print_string(itoa(getchar_at(1,player_x+move_x,player_y+move_y),buf,10));
+    if(getchar_at(1,player_x+move_x,player_y+move_y) == ' ')
+    {
+        putchar_at(getchar_at(1,player_x,player_y),player_x,player_y);
+        player_x += move_x;
+        player_y += move_y; 
+    }
+    putchar_at('@',player_x,player_y);
+    return;
+}
+
+
+struct enemy_t{
+    char sprite;
+    char name[20];
+    uint32_t health;
+    unsigned int attack;
+    int defense;
+    int xp_reward;
+    int gold_reward;
+};
+typedef struct enemy_t enemy_t;
+
+
+typedef void (*DrawFunc)();
+
+struct screen_t
+{
+    enemy_t enemies[10];
+    DrawFunc draw;
+};
+
+
+void draw_screen0()
+{
+    print_rect(176,9,9,20,19);
+}
 
 int main()
 {
-    int c;
+    boxstyle_t consoleboxstyle;
+    consoleboxstyle.top = 205;
+    consoleboxstyle.bottom = 205;
+    consoleboxstyle.left = 186;
+    consoleboxstyle.right = 186;
+    consoleboxstyle.tl = 201;
+    consoleboxstyle.tr = 187;
+    consoleboxstyle.bl = 200;
+    consoleboxstyle.br = 188;
+
+    gamestate = EXPLORING;
+
+    c = 1;
+    player_y = 11;
+    player_x = 11;
     init_screen();
-    cursor_x = 10;
-    cursor_y = 10;
-    set_page(1); // draw background to page 1, copy to page 0
-    print_filled_rect(' ',9,9,16,13);
-    set_color(White,Green);
-    set_page(0);
-    copy_pages();
-    putchar_at('@',10,10);
-    c = get_key();
-    while(c != 'e')
+    draw_screen0();
+    while(c == 1)
     {
-        putchar(c);
-        c = get_key();
+        switch(gamestate)
+        {
+            case EXPLORING:
+                move_player();
+            break;
+        }
     }
     set_color(White,Black);
+    reset_screen();
     return 0;
 }
