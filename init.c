@@ -1,6 +1,7 @@
 #define _M_I86
 #define _DOSBOX
 #include <stdint.h>
+#include <stdlib.h>
 #include <i86.h>
 
 typedef enum color_t {Black,Blue,Green,Cyan,Red,Magenta,Brown,LightGrey,DarkGrey,LightBlue,LightGreen,LightCyan,LightRed,LightMagenta,Yellow,White} TerminalColor;
@@ -31,7 +32,16 @@ gamestate_t gamestate;
 #define PAGESIZE (SCREEN_WIDTH*SCREEN_HEIGHT*2)
 #define PAGE(page) (terminalbuffer + ((PAGESIZE)*(page)))
 #define set_page(page) currentpage = PAGE(page)
-#define getchar_at(page,x,y) ((char)*(PAGE(page)+(SCREEN_WIDTH*(y)) + (x)))
+#define getchar_at(page,x,y) (char)((*(PAGE(page)+(SCREEN_WIDTH*(y)) + (x))))
+#define getattrib_at(page,x,y) (char)((*(PAGE(page)+(SCREEN_WIDTH*(y)) + (x)))>>8)
+
+typedef struct attrib_t{
+    char fg;
+    char bg;
+}attrib_t;
+
+
+#define attrib_to_colors(attrib,out)  out.fg = (attrib & 0x0F); out.bg = ((attrib & 0x70) >> 4);
 
 uint8_t terminal_color;
 uint8_t cursor_x;
@@ -156,12 +166,12 @@ void print_fancy_box(boxstyle_t style, uint8_t x1, uint8_t y1, uint8_t cwidth, u
 }
 
 
-void print_filled_rect(char c, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
+void print_filled_rect(char c, uint8_t x1, uint8_t y1, uint8_t width, uint8_t height)
 {
     int x, y;
-    for(y = y1; y <= y2; y++)
+    for(y = y1; y < y1+height; y++)
     {
-        for(x = x1; x <= x2; x++)
+        for(x = x1; x < x1+width; x++)
         {
             putchar_at(c, x, y);
         }
@@ -215,8 +225,11 @@ char buf[10];
 
 void move_player()
 {
+    // make sure the current page is 0 when  calling this
     int move_x;
     int move_y;
+    char attrib;
+    attrib_t colors;
     key_t key;
     move_x = 0;
     move_y = 0;
@@ -248,19 +261,27 @@ void move_player()
         default:
             break;
     }
-    //print_string(itoa(getchar_at(1,player_x+move_x,player_y+move_y),buf,10));
-    if(getchar_at(1,player_x+move_x,player_y+move_y) == ' ')
+    attrib = getattrib_at(1,player_x,player_y);
+    attrib_to_colors(attrib,colors);
+    //print_string(itoa(colors.bg,buf,10));
+    if(getchar_at(4,player_x+move_x,player_y+move_y) == ' ')
     {
+        set_color(colors.fg,colors.bg);
         putchar_at(getchar_at(1,player_x,player_y),player_x,player_y);
         player_x += move_x;
         player_y += move_y; 
     }
+    attrib = getattrib_at(1,player_x,player_y);
+    attrib_to_colors(attrib,colors);
+    set_color(White,colors.bg);
     putchar_at('@',player_x,player_y);
     return;
 }
 
 
 struct enemy_t{
+    uint8_t x;
+    uint8_t y;
     char sprite;
     char name[20];
     uint32_t health;
@@ -280,11 +301,39 @@ struct screen_t
     DrawFunc draw;
 };
 
+typedef struct screen_t screen_t;
+
 
 void draw_screen0()
 {
-    print_rect(176,9,9,20,19);
+    set_color(Brown,Brown);
+    print_filled_rect(' ',0,0,SCREEN_WIDTH,SCREEN_HEIGHT);
+    set_color(Black,Black);
+    print_filled_rect(' ',0,0,SCREEN_WIDTH,4);
+    print_filled_rect(' ',0,20,SCREEN_WIDTH,5);
+    set_page(4);
+    print_filled_rect('x',0,0,SCREEN_WIDTH,4);
+    print_filled_rect('x',0,20,SCREEN_WIDTH,5);
+    set_page(1);
+    set_color(LightGrey,LightGrey);
+    print_filled_rect(' ',7,7,17,4);
+    set_color(Green,Green);
+    print_filled_rect(' ',9,7,13,4);
+    set_color(Yellow,Green);
+    print_filled_rect('&',11,7,3,2);
+    return;
 }
+
+screen_t screens[10];
+
+void setupscreens()
+{
+    screen_t screen0;
+    screen0.draw = &draw_screen0;
+    screens[0] = screen0;
+}
+
+#define draw_screen(x) set_page(1); (screens[x].draw)(); copy_pages(); set_page(0); set_color(White,Black);
 
 int main()
 {
@@ -298,13 +347,15 @@ int main()
     consoleboxstyle.bl = 200;
     consoleboxstyle.br = 188;
 
+    setupscreens();
+
     gamestate = EXPLORING;
 
     c = 1;
     player_y = 11;
     player_x = 11;
     init_screen();
-    draw_screen0();
+    draw_screen(0);
     while(c == 1)
     {
         switch(gamestate)
