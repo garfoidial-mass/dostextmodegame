@@ -9,6 +9,16 @@
         "i86.h": "c",
         "stdint.h": "c",
         "cstdint": "c",
-        "compare": "c"
+        "compare": "c",
+        "cmath": "c",
+        "_comdef.h": "c",
+        "conio.h": "c",
+        "stdlib.h": "c",
+        "cstddef": "cpp",
+        "cstdio": "cpp",
+        "cstdlib": "cpp",
+        "cstring": "cpp",
+        "graphics.h": "c",
+        "common.h": "c"
     }
 }
