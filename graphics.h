@@ -201,10 +201,6 @@ void init_screen()
     set_controller_bits();
     set_color(White,Black);
     
-    registers.h.ah = 0x01;
-    registers.h.ch = 0x3F;
-    int86(0x10,&registers,&registers);
-    
     return;
 }
 
