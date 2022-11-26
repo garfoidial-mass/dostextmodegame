@@ -8,10 +8,6 @@ typedef enum color_t {Black,Blue,Green,Cyan,Red,Magenta,Brown,LightGrey,DarkGrey
 uint16_t* __far terminalbuffer;
 uint16_t* __far currentpage;
 
-enum gamestate_t {EXPLORING, CONVERSING, CHOOSING, ATTACKING, DEFENDING};
-typedef enum gamestate_t gamestate_t;
-gamestate_t gamestate;
-
 #define SCREEN_WIDTH 40
 #define SCREEN_HEIGHT 25
 
@@ -20,6 +16,7 @@ gamestate_t gamestate;
 #define set_page(page) currentpage = PAGE(page)
 #define getchar_at(page,x,y) (char)((*(PAGE(page)+(SCREEN_WIDTH*(y)) + (x))))
 #define getattrib_at(page,x,y) (char)((*(PAGE(page)+(SCREEN_WIDTH*(y)) + (x)))>>8)
+#define getfull_at(page,x,y) ((*(PAGE(page)+(SCREEN_WIDTH*(y)) + (x))))
 #define set_transitionindex(index) terminal_color = index
 
 typedef struct attrib_t{
@@ -135,10 +132,10 @@ void print_fancy_box(boxstyle_t style, uint8_t x1, uint8_t y1, uint8_t cwidth, u
 {
     uint8_t width = cwidth-1;
     uint8_t height = cheight-1;
-    print_hor_line(style.top,x1+1,y1,width-2);
-    print_hor_line(style.bottom,x1+1,y1+height,width-2);
-    print_vert_line(style.left,x1,y1+1,height-2);
-    print_vert_line(style.left,x1+width,y1+1,height-2);
+    print_hor_line(style.top,x1+1,y1,width-1);
+    print_hor_line(style.bottom,x1+1,y1+height,width-1);
+    print_vert_line(style.left,x1,y1+1,height-1);
+    print_vert_line(style.left,x1+width,y1+1,height-1);
     putchar_at(style.tl,x1,y1);
     putchar_at(style.tr,x1+width,y1);
     putchar_at(style.bl,x1,y1+height);
@@ -154,6 +151,19 @@ void print_filled_rect(char c, uint8_t x1, uint8_t y1, uint8_t width, uint8_t he
         for(x = x1; x < x1+width; x++)
         {
             putchar_at(c, x, y);
+        }
+    }
+}
+
+void redraw_rect(uint8_t x1, uint8_t y1, uint8_t width, uint8_t height)
+{
+    int x;
+    int y;
+    for(y = y1; y < y1+height; y++)
+    {
+        for(x=x1; x<x1+width; x++)
+        {
+            *(currentpage + (SCREEN_WIDTH*y) + x) = getfull_at(1,x,y);
         }
     }
 }
@@ -185,15 +195,16 @@ void copy_pages()
 void init_screen()
 {
 
-    #ifdef _DOSBOX
     terminalbuffer = (uint16_t *) 0xB8000000;
-    #else
-    terminalbuffer = (uint16_t *) 0xB8000;
-    #endif
     set_page(0);
 
     set_controller_bits();
     set_color(White,Black);
+    
+    registers.h.ah = 0x01;
+    registers.h.ch = 0x3F;
+    int86(0x10,&registers,&registers);
+    
     return;
 }
 

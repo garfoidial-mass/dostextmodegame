@@ -3,61 +3,15 @@
 #include <stdlib.h>
 #include "graphics.h"
 #include "common.h"
-//#include <conio.h>
+#include "dialog.h"
 
-
-struct key_t{
-    int scancode;
-    char ascii;
-};
-typedef struct key_t key_t;
-
-
-
-//get input
-
-key_t get_key()
-{
-    key_t key;
-    registers.h.ah = 0;
-    int86(0x16,&registers,&registers);
-    key.ascii = registers.h.al;
-    key.scancode = registers.h.ah;
-    return key;
-}
-
-int player_x;
-int player_y;
 int c;
 char buf[10];
 
-struct enemy_t{
-    uint8_t x;
-    uint8_t y;
-    char sprite;
-    char name[20];
-    uint32_t health;
-    unsigned int attack;
-    int defense;
-    int xp_reward;
-    int gold_reward;
-};
-typedef struct enemy_t enemy_t;
-
-
-typedef void (*DrawFunc)();
-
-struct screen_t
-{
-    uint8_t startx;
-    uint8_t starty;
-    enemy_t enemies[10]; // change to npcs
-    DrawFunc draw;
-};
-
-typedef struct screen_t screen_t;
-
-screen_t screens[10];  // i am using the color attribute for screen transition characters as the index into this sometimes
+//screens:
+//0 - draw screen/ output screen
+//1 - backgrounds
+//4 - collision
 
 #define draw_screen(x) set_page(1); (screens[x].draw)(); copy_pages(); set_page(0); set_color(White,Black)
 
@@ -68,6 +22,10 @@ void change_screen(int index)
     player_y = screen.starty;
     clear_screen();
     draw_screen(index);
+    current_screen = &(screens[index]);
+    registers.h.ah = 0x01;
+    registers.h.ch = 0x3F;
+    int86(0x10,&registers,&registers);
     return;
 }
 
@@ -113,10 +71,16 @@ void move_player()
     attrib_to_colors(attrib,colors);
     //print_string(itoa(colors.bg,buf,10));
     //char 21 is screen transition char
+    // make smiley face npc trigger char
     switch(getchar_at(4,player_x+move_x,player_y+move_y))
     {
         case 21:
             change_screen(getattrib_at(4,player_x+move_x,player_y+move_y));
+        break;
+
+        case 1:
+            //index into triggers with color attribute
+            (current_screen->triggers[getattrib_at(4,player_x+move_x,player_y+move_y)])();
         break;
 
         case ' ':
@@ -171,9 +135,42 @@ void draw_screen1()
     print_filled_rect(' ',0,15,SCREEN_WIDTH-5,4);
     set_transitionindex(0);
     print_vert_line(21,0,15,5);
+    set_transitionindex(2);
+    print_hor_line(21,31,14,6);
     set_page(1);
+    set_color(DarkGrey,Black);
+    print_fancy_box(dialogueboxstyle,30,9,5,7);
     set_color(DarkGrey,DarkGrey);
     print_filled_rect(' ',0,15,SCREEN_WIDTH-5,4);
+    return;
+}
+
+
+void draw_screen2()
+{
+    set_color(DarkGrey,DarkGrey);
+    print_filled_rect(' ',12,10,16,5);
+    set_color(LightGrey,LightGrey);
+    print_filled_rect(' ',15,10,10,5);
+    set_color(Green,Green);
+    print_filled_rect(' ',17,10,6,3);
+    set_color(LightGreen,Green);
+    putchar_at(179,20,10);
+    set_color(Yellow,Black);
+    putchar_at('*',20,9);
+    set_page(4);
+    set_transitionindex(0);
+    print_filled_rect(1,17,9,6,4);
+    set_page(1);
+    return;
+}
+
+void trigger1_screen2()
+{
+    start_dialog(&(flowey_lines[0]));
+    set_page(4);
+    print_filled_rect(' ',17,9,6,4);
+    set_page(0);
     return;
 }
 
@@ -181,6 +178,8 @@ void setupscreens()
 {
     screen_t screen0;
     screen_t screen1;
+    screen_t screen2;
+
     screen0.draw = &draw_screen0;
     screen0.startx = 11;
     screen0.starty = 11;
@@ -190,19 +189,36 @@ void setupscreens()
     screen1.startx = 1;
     screen1.starty = 16;
     screens[1] = screen1;
+
+    screen2.draw = &draw_screen2;
+    screen2.startx = SCREEN_WIDTH/2;
+    screen2.starty = SCREEN_HEIGHT-1;
+    screen2.triggers[0] = &trigger1_screen2;
+    screens[2] = screen2;
 }
 
 int main()
 {
-    boxstyle_t consoleboxstyle;
-    consoleboxstyle.top = 205;
-    consoleboxstyle.bottom = 205;
-    consoleboxstyle.left = 186;
-    consoleboxstyle.right = 186;
-    consoleboxstyle.tl = 201;
-    consoleboxstyle.tr = 187;
-    consoleboxstyle.bl = 200;
-    consoleboxstyle.br = 188;
+
+    init_dialog(&(flowey_lines[0]),NULL,lines[0],lines[1],&(flowey_lines[1]),NULL);
+    init_dialog(&(flowey_lines[1]),NULL,lines[0],lines[2],&(flowey_lines[2]),NULL);
+    init_dialog(&(flowey_lines[2]),NULL,lines[0],lines[3],&(flowey_lines[3]),NULL);
+    init_dialog(&(flowey_lines[3]),NULL,lines[0],lines[4],&(flowey_lines[4]),NULL);
+    init_dialog(&(flowey_lines[4]),NULL,lines[0],lines[5],&(flowey_lines[5]),NULL);
+    init_dialog(&(flowey_lines[5]),NULL,lines[0],lines[6],&(flowey_lines[6]),NULL);
+    init_dialog(&(flowey_lines[6]),NULL,lines[0],lines[7],NULL,NULL);
+
+
+
+    dialogueboxstyle.top = 205;
+    dialogueboxstyle.bottom = 205;
+    dialogueboxstyle.left = 186;
+    dialogueboxstyle.right = 186;
+    dialogueboxstyle.tl = 201;
+    dialogueboxstyle.tr = 187;
+    dialogueboxstyle.bl = 200;
+    dialogueboxstyle.br = 188;
+    
 
     setupscreens();
 
@@ -212,12 +228,16 @@ int main()
     init_screen();
 
     change_screen(0);
+
     while(c == 1)
     {
         switch(gamestate)
         {
             case EXPLORING:
                 move_player();
+            break;
+
+            default:
             break;
         }
     }

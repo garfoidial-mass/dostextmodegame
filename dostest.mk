@@ -1,3 +1,3 @@
-project : C:\Users\umbre\Documents\dos\dostest.exe .SYMBOLIC
+project : C:\Users\Basil\Documents\dosgame\dostest.exe .SYMBOLIC
 
-!include C:\Users\umbre\Documents\dos\dostest.mk1
+!include C:\Users\Basil\Documents\dosgame\dostest.mk1

@@ -19,6 +19,8 @@
         "cstdlib": "cpp",
         "cstring": "cpp",
         "graphics.h": "c",
-        "common.h": "c"
+        "common.h": "c",
+        "dialog.h": "c",
+        "memory": "c"
     }
 }

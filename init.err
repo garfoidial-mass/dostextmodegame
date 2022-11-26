@@ -1,1 +1,14 @@
-init.c(431): Warning! W138: No newline at end of file
+common.h(64): Warning! W138: No newline at end of file
+common.h(64): Warning! W129: #endif matches #if in different source file 'common.h'
+graphics.h(216): Warning! W138: No newline at end of file
+graphics.h(216): Warning! W129: #endif matches #if in different source file 'graphics.h'
+common.h(64): Warning! W138: No newline at end of file
+common.h(64): Warning! W129: #endif matches #if in different source file 'common.h'
+common.h(64): Warning! W138: No newline at end of file
+common.h(64): Warning! W129: #endif matches #if in different source file 'common.h'
+graphics.h(216): Warning! W138: No newline at end of file
+graphics.h(216): Warning! W129: #endif matches #if in different source file 'graphics.h'
+dialog.h(125): Warning! W138: No newline at end of file
+dialog.h(125): Warning! W129: #endif matches #if in different source file 'dialog.h'
+init.c(83): Warning! W400: Array subscript is of type plain char
+init.c(247): Warning! W138: No newline at end of file
